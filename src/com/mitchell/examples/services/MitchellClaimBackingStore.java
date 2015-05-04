@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -27,8 +28,9 @@ public class MitchellClaimBackingStore {
 		// TODO Auto-generated method stub
 		if(newMitchellClaimType != null){
 			mitchellClaims.add(newMitchellClaimType);
+			serializeClaims(mitchellClaims);
 			totalNumberOfClaims++;
-			return serializeClaims(mitchellClaims);
+			return true;
 			//System.out.println(mitchellClaims.toString() + "total number of claims" + totalNumberOfClaims);			
 		}
 		return false;
@@ -62,12 +64,11 @@ public class MitchellClaimBackingStore {
 						listOfClaimsByDateRange.add(mitchellClaim);
 					}
 				}
-				return listOfClaimsByDateRange;
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return null;
+		return listOfClaimsByDateRange;
 	}
 	
 	public ArrayList<MitchellClaimType> deleteClaim(String claimNumber){
@@ -87,6 +88,22 @@ public class MitchellClaimBackingStore {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		
+		/*Iterator<MitchellClaimType> claimsIt = mitchellClaims.iterator();
+		while(claimsIt.hasNext())
+		{
+			if(claimsIt.next().getClaimNumber().equals(claimNumber)){
+				claimsIt.remove();
+				try {
+					serializeClaims(claimsIt);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				totalNumberOfClaims--;
+				break;
+			}
+		}*/
 		return null;
 	}
 	
@@ -98,35 +115,31 @@ public class MitchellClaimBackingStore {
 		return null;
 	}
 
-	public boolean serializeClaims(ArrayList<MitchellClaimType> mitchellClaims2) {
+	public void serializeClaims(Object mitchellClaims2) {
 		// TODO Auto-generated method stub
 		try
 	      {
-	         FileOutputStream fileOut =
-	         new FileOutputStream("claims.ser");
+	         FileOutputStream fileOut = new FileOutputStream("claims.ser");
 	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
 	         out.writeObject(mitchellClaims2);
 	         out.close();
 	         fileOut.close();
 	         System.out.printf("Serialized data is saved in claims.ser");
-	         return true;
 	      }catch(IOException i)
 	      {
 	          i.printStackTrace();
 	      }
-		return false;
 	}
 	
 	public ArrayList<MitchellClaimType> deserializeClaims(){
-		ArrayList<MitchellClaimType> claims1 = new ArrayList<MitchellClaimType>();
+		ArrayList<MitchellClaimType> deserializedClaims = new ArrayList<MitchellClaimType>();
 		try
 	      {
 	         FileInputStream fileIn = new FileInputStream("claims.ser");
 	         ObjectInputStream in = new ObjectInputStream(fileIn);
-	         claims1 = (ArrayList<MitchellClaimType>) in.readObject();
+	         deserializedClaims = (ArrayList<MitchellClaimType>) in.readObject();
 	         in.close();
 	         fileIn.close();
-	         return claims1;
 	      }catch(IOException i)
 	      {
 	         i.printStackTrace();
@@ -135,7 +148,7 @@ public class MitchellClaimBackingStore {
 	         System.out.println("Employee class not found");
 	         c.printStackTrace();
 	      }
-		return null;
+        return deserializedClaims;
 	}
 
 	public void updateClaim(MitchellClaimType mitchellClaimType) {
